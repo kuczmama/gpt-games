@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puyo Puyo Simplified</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            border: 1px solid black;
+        }
+
+        #controls {
+            margin-top: 10px;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas" width="240" height="480"></canvas>
+    
+    <div id="controls">
+        <button onclick="startGame()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        Score: <span id="score">0</span> | High Score: <span id="highScore">0</span>
+    </div>
+    <div id="instructions">
+        <h2>How to Play:</h2>
+        <ul>
+            <li><b>Start:</b> Click the Start button to begin the game.</li>
+            <li><b>Pause:</b> Click the Pause button to pause the game.</li>
+            <li><b>Move Left:</b> Press the "A" key or the left arrow key.</li>
+            <li><b>Move Right:</b> Press the "D" key or the right arrow key.</li>
+            <li><b>Move Down Faster:</b> Press the "S" key or the down arrow key.</li>
+            <li>Stack the blocks and try to get 4 or more of the same color in a row horizontally.</li>
+            <li>Score points by removing blocks. The game ends when a new block can't enter the play area.</li>
+        </ul>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const grid = [];
+        const gridSize = 30;
+        const gridRows = canvas.height / gridSize;
+        const gridCols = canvas.width / gridSize;
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        document.getElementById('highScore').innerText = highScore;
+        let currentBlock = null;
+        let gameInterval;
+
+        class Block {
+            constructor() {
+                this.row = 0;
+                this.col = Math.floor(gridCols / 2);
+                this.color = ['red', 'blue', 'green', 'yellow'][Math.floor(Math.random() * 4)];
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.col * gridSize, this.row * gridSize, gridSize, gridSize);
+            }
+
+            collision(rowDelta, colDelta) {
+                const newRow = this.row + rowDelta;
+                const newCol = this.col + colDelta;
+
+                // Check for grid boundaries
+                if (newRow >= gridRows || newRow < 0 || newCol >= gridCols || newCol < 0) {
+                    return true;
+                }
+
+                // Check for other blocks
+                if (grid[newRow][newCol]) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            moveDown() {
+                if (!this.collision(1, 0)) {
+                    this.row++;
+                } else {
+                    grid[this.row][this.col] = this.color;
+                    this.checkRemoval();
+                    currentBlock = new Block();
+                    if (currentBlock.collision(0, 0)) {  // Changed this line from `this.collision` to `currentBlock.collision`
+                        // Game over condition: a new block collides immediately after being created
+                        pauseGame();
+                        alert('Game Over!');
+                    }
+                }
+            }
+
+
+            moveLeft() {
+                if (!this.collision(0, -1)) {
+                    this.col--;
+                }
+            }
+
+            moveRight() {
+                if (!this.collision(0, 1)) {
+                    this.col++;
+                }
+            }
+
+            checkRemoval() {
+                for (let r = 0; r < gridRows; r++) {
+                    let count = 0;
+                    for (let c = 0; c < gridCols; c++) {
+                        if (grid[r][c] === this.color) count++;
+                    }
+                    if (count >= 4) {
+                        for (let c = 0; c < gridCols; c++) {
+                            grid[r][c] = null;
+                        }
+                        increaseScore(count);
+                    }
+                }
+            }
+        }
+
+        function initializeGrid() {
+            for (let r = 0; r < gridRows; r++) {
+                grid[r] = [];
+                for (let c = 0; c < gridCols; c++) {
+                    grid[r][c] = null;
+                }
+            }
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
+                    if (grid[r][c]) {
+                        ctx.fillStyle = grid[r][c];
+                        ctx.fillRect(c * gridSize, r * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+
+        function increaseScore(points) {
+            score += points * 10;
+            document.getElementById('score').innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+                document.getElementById('highScore').innerText = highScore;
+            }
+        }
+
+        function startGame() {
+            initializeGrid();
+            score = 0;
+            document.getElementById('score').innerText = score;
+            currentBlock = new Block();
+            gameInterval = setInterval(() => {
+                drawGrid();
+                currentBlock.draw();
+                currentBlock.moveDown();
+            }, 500);
+        }
+
+        function pauseGame() {
+            clearInterval(gameInterval);
+        }
+
+        // Keyboard control
+        document.addEventListener('keydown', function (e) {
+            if (!currentBlock) return;
+
+            switch (e.code) {
+                case 'ArrowLeft':
+                case 'KeyA':
+                    currentBlock.moveLeft();
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    currentBlock.moveRight();
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    currentBlock.moveDown();
+                    break;
+            }
+
+            drawGrid();
+            currentBlock.draw();
+        });
+
+    </script>
+</body>
+
+</html>
