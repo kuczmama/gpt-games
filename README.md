@@ -2,7 +2,7 @@
 
 ![GPT Games Logo](images/logo.jpeg)
 
-Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with a sprinkle of AI, a dash of creativity, and a whole lot of enthusiasm by [Mark Kuczmarski](https://github.com/markkuczmarski). If you've ever thought, "what would a game made with the help of an AI look like?" - you're in the right place.
+Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with a sprinkle of AI, a dash of creativity, and a whole lot of enthusiasm by [Mark Kuczmarski](https://github.com/kuczmama). If you've ever thought, "what would a game made with the help of an AI look like?" - you're in the right place.
 
 ![GPT Games Screenshot](URL_TO_YOUR_SCREENSHOT)
 
@@ -15,7 +15,7 @@ And guess what? More games are on the horizon! Stay tuned for more AI-assisted g
 
 ## Demo 🚀
 
-Ready to dive in? Check out the live demo [here](YOUR_DEMO_LINK).
+Ready to dive in? Check out the live demo [here](https://kuczmama.github.io/gpt-games).
 
 ## Contribute 🤝
 
@@ -24,7 +24,7 @@ Got some cool game ideas or tweaks? Let's make GPT Games even better!
 1. **Fork** the repository.
 2. **Clone** your forked repo.
    ```bash
-   git clone https://github.com/YOUR_USERNAME/GPTGames.git
+   git clone https://github.com/kuczmama/gpt-games.git
    ```
 3. Make your magic changes.
 4. **Commit** and **push**.
