@@ -43,10 +43,13 @@
             <li><b>Move Left:</b> Press the "A" key or the left arrow key.</li>
             <li><b>Move Right:</b> Press the "D" key or the right arrow key.</li>
             <li><b>Move Down Faster:</b> Press the "S" key or the down arrow key.</li>
-            <li>Stack the blocks and try to get 4 or more of the same color in a row horizontally.</li>
-            <li>Score points by removing blocks. The game ends when a new block can't enter the play area.</li>
+            <li><b>Rotate Blocks:</b> Press the up arrow key to rotate the blocks.</li>
+            <li>Stack the blocks and try to get 4 or more of the same color in a row horizontally or vertically to remove them.</li>
+            <li>The game progresses with blocks falling from the top. Your objective is to strategically place these blocks without letting them overflow. Once a pair of blocks can't fit into the play area, the game ends.</li>
+            <li>Score points by removing blocks. The more blocks you remove at once, the higher your score!</li>
         </ul>
     </div>
+    
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -60,29 +63,72 @@
         let currentBlock = null;
         let gameInterval;
 
-        class Block {
+        class BlockPair {
             constructor() {
-                this.row = 0;
-                this.col = Math.floor(gridCols / 2);
-                this.color = ['red', 'blue', 'green', 'yellow'][Math.floor(Math.random() * 4)];
+                this.primary = {
+                    row: 0,
+                    col: Math.floor(gridCols / 2),
+                    color: this.randomColor()
+                };
+                this.secondary = {
+                    row: -1,
+                    col: Math.floor(gridCols / 2),
+                    color: this.randomColor()
+                };
+                this.rotationState = 0;  // Initialize to 0
+            }
+
+            rotate() {
+                let newRow = this.secondary.row;
+                let newCol = this.secondary.col;
+
+                switch (this.rotationState) {
+                    case 0:
+                        newRow = this.primary.row;
+                        newCol = this.primary.col + 1;
+                        break;
+                    case 1:
+                        newRow = this.primary.row + 1;
+                        newCol = this.primary.col;
+                        break;
+                    case 2:
+                        newRow = this.primary.row;
+                        newCol = this.primary.col - 1;
+                        break;
+                    case 3:
+                        newRow = this.primary.row - 1;
+                        newCol = this.primary.col;
+                        break;
+                }
+
+                // Check if the new position is valid
+                if (newRow >= 0 && newRow < gridRows && newCol >= 0 && newCol < gridCols && !grid[newRow][newCol]) {
+                    this.secondary.row = newRow;
+                    this.secondary.col = newCol;
+                    this.rotationState = (this.rotationState + 1) % 4;  // Update the rotation state
+                }
+            }
+
+
+            randomColor() {
+                return ['red', 'blue', 'green', 'yellow'][Math.floor(Math.random() * 4)];
             }
 
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.col * gridSize, this.row * gridSize, gridSize, gridSize);
+                this.drawBlock(this.primary);
+                this.drawBlock(this.secondary);
             }
 
-            collision(rowDelta, colDelta) {
-                const newRow = this.row + rowDelta;
-                const newCol = this.col + colDelta;
+            drawBlock(block) {
+                ctx.fillStyle = block.color;
+                ctx.fillRect(block.col * gridSize, block.row * gridSize, gridSize, gridSize);
+            }
 
-                // Check for grid boundaries
-                if (newRow >= gridRows || newRow < 0 || newCol >= gridCols || newCol < 0) {
-                    return true;
-                }
+            collision(rowDelta, colDelta, block) {
+                const newRow = block.row + rowDelta;
+                const newCol = block.col + colDelta;
 
-                // Check for other blocks
-                if (grid[newRow][newCol]) {
+                if (newRow >= gridRows || newRow < 0 || newCol >= gridCols || newCol < 0 || grid[newRow][newCol]) {
                     return true;
                 }
 
@@ -90,32 +136,47 @@
             }
 
             moveDown() {
-                if (!this.collision(1, 0)) {
-                    this.row++;
+                const primaryCollision = this.collision(1, 0, this.primary);
+                const secondaryCollision = this.collision(1, 0, this.secondary);
+
+                if (!primaryCollision && !secondaryCollision) {
+                    this.primary.row++;
+                    this.secondary.row++;
                 } else {
-                    grid[this.row][this.col] = this.color;
+                    grid[this.primary.row][this.primary.col] = this.primary.color;
+                    if (this.secondary.row >= 0) {  // Only place the secondary block if it's within the grid
+                        grid[this.secondary.row][this.secondary.col] = this.secondary.color;
+                    }
                     this.checkRemoval();
-                    currentBlock = new Block();
-                    if (currentBlock.collision(0, 0)) {  // Changed this line from `this.collision` to `currentBlock.collision`
-                        // Game over condition: a new block collides immediately after being created
-                        pauseGame();
-                        alert('Game Over!');
+                    currentBlock = new BlockPair();  // Create a new pair
+                    if (this.collision(0, 0, currentBlock.primary)) {
+                        if (this.collision(0, 0, currentBlock.secondary)) {
+                            // Only end the game if both primary and secondary blocks collide at their starting positions
+                            pauseGame();
+                            alert('Game Over!');
+                        } else {
+                            // If the secondary block doesn't collide, move it down one position to make it visible
+                            currentBlock.secondary.row++;
+                        }
                     }
                 }
             }
 
 
             moveLeft() {
-                if (!this.collision(0, -1)) {
-                    this.col--;
+                if (!this.collision(0, -1, this.primary) && !this.collision(0, -1, this.secondary)) {
+                    this.primary.col--;
+                    this.secondary.col--;
                 }
             }
 
             moveRight() {
-                if (!this.collision(0, 1)) {
-                    this.col++;
+                if (!this.collision(0, 1, this.primary) && !this.collision(0, 1, this.secondary)) {
+                    this.primary.col++;
+                    this.secondary.col++;
                 }
             }
+
             checkRemoval() {
                 let visited = Array(gridRows).fill(null).map(() => Array(gridCols).fill(false));
                 let toRemove = [];
@@ -203,7 +264,7 @@
             initializeGrid();
             score = 0;
             document.getElementById('score').innerText = score;
-            currentBlock = new Block();
+            currentBlock = new BlockPair();  // <-- This is the change
             gameInterval = setInterval(() => {
                 drawGrid();
                 currentBlock.draw();
@@ -211,9 +272,11 @@
             }, 500);
         }
 
+
         function pauseGame() {
             clearInterval(gameInterval);
         }
+
 
         // Keyboard control
         document.addEventListener('keydown', function (e) {
@@ -231,6 +294,9 @@
                 case 'ArrowDown':
                 case 'KeyS':
                     currentBlock.moveDown();
+                    break;
+                case 'ArrowUp':
+                    currentBlock.rotate();
                     break;
             }
 
