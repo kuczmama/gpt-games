@@ -4,7 +4,25 @@
 
 Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with a sprinkle of AI, a dash of creativity, and a whole lot of enthusiasm by [Mark Kuczmarski](https://github.com/kuczmama). If you've ever thought, "what would a game made with the help of an AI look like?" - you're in the right place.
 
-![GPT Games Screenshot](URL_TO_YOUR_SCREENSHOT)
+<style>
+    .image-container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .image-container img {
+        flex: 1;
+        max-width: calc(100% / 3);
+        min-width: calc(100% / 3);
+    }
+</style>
+
+<div class="image-container">
+    <img src="images/mario-screenshot.png" alt="Mario Screenshot">
+    <img src="images/pong-screenshot.png" alt="Pong Screenshot">
+    <img src="images/hangman-screenshot.png" alt="Hangman Screenshot">
+</div>
 
 ## Games 🕹️
 
