@@ -4,32 +4,17 @@
 
 Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with a sprinkle of AI, a dash of creativity, and a whole lot of enthusiasm by [Mark Kuczmarski](https://github.com/kuczmama). If you've ever thought, "what would a game made with the help of an AI look like?" - you're in the right place.
 
-<style>
-    .image-container {
-        display: flex;
-        flex-wrap: wrap;
-        width: 100%;
-    }
-
-    .image-container img {
-        flex: 1;
-        max-width: calc(100% / 3);
-        min-width: calc(100% / 3);
-    }
-</style>
-
-<div class="image-container">
-    <img src="images/mario-screenshot.png" alt="Mario Screenshot">
-    <img src="images/pong-screenshot.png" alt="Pong Screenshot">
-    <img src="images/hangman-screenshot.png" alt="Hangman Screenshot">
-</div>
-
 ## Games 🕹️
 
 - **Pong Game**: The classic Pong you love, but with a twist – it's made in collaboration with an AI. Bet you didn't see that coming!
 - **Mario-inspired Platformer**: Jump, dodge, and collect stars. And remember, every time you fall, somewhere in the cloud, an AI sheds a virtual tear. 🤖
+- **Hangman Game**: Challenge your vocabulary skills! Guess letters and uncover the word. But watch out! Every wrong guess brings the hangman closer. Can you solve the puzzle before the hangman completes? Crafted with AI wisdom, of course!
 
 And guess what? More games are on the horizon! Stay tuned for more AI-assisted gaming madness.
+
+| Mario Screenshot | Pong Screenshot | Hangman Screenshot |
+|:---:|:---:|:---:|
+| ![Mario Screenshot](images/mario-screenshot.png) | ![Pong Screenshot](images/pong-screenshot.png) | ![Hangman Screenshot](images/hangman-screenshot.png) |
 
 ## Demo 🚀
 
