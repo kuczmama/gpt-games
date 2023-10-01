@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side-Scroller Platformer</title>
+    <style>
+        canvas {
+            background-color: #87CEEB;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const player = {
+        startX: 50,
+        startY: 300,
+        x: 50,
+        y: 300,
+        width: 30,
+        height: 40,
+        color: '#FF4500',
+        dx: 0,
+        dy: 0,
+        speed: 4,
+        gravity: 0.5,
+        jumpForce: -10,
+        onGround: false
+    };
+
+    const enemy = {
+        x: 600,
+        y: 300,
+        width: 30,
+        height: 40,
+        color: '#8B0000',
+        dx: -2
+    };
+
+    const goal = {
+        x: 4750,  // Placed at the end of the side-scrolling area
+        y: 310,
+        width: 30,
+        height: 40,
+        color: '#FFFF00'
+    };
+
+    let platforms = [];
+
+    let currentLevel = 1;
+    const maxLevels = 10;
+    let cameraX = 0;
+    let enemies = [];
+    let stars = [];
+
+    function generateLevel(level) {
+        platforms = [{
+            x: 0,
+            y: 350,
+            width: 5000,
+            height: 50,
+            color: '#228B22'
+        }];
+
+        for (let i = 0; i < (level + 2) * 10; i++) {
+            platforms.push({
+                x: Math.random() * 4800,
+                y: Math.random() * 300 + 50,
+                width: 80 + Math.random() * 120,
+                height: 10,
+                color: '#228B22'
+            });
+        }
+
+        // Generate enemies
+        enemies = [];
+        for (let i = 0; i < level * 2; i++) {
+            enemies.push({
+                x: Math.random() * 4800,
+                y: 300,
+                width: 30,
+                height: 40,
+                color: '#8B0000',
+                dx: (Math.random() < 0.5 ? -1 : 1) * 2  // Random direction
+            });
+        }
+
+        // Generate stars
+        stars = [];
+        for (let i = 0; i < level * 5; i++) {
+            stars.push({
+                x: Math.random() * 4800,
+                y: Math.random() * 300 + 50,
+                radius: 10,
+                color: '#FFD700'
+            });
+        }
+    }
+    generateLevel(currentLevel);
+
+    let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === "ArrowLeft") player.dx = -player.speed;
+        if (e.code === "ArrowRight") player.dx = player.speed;
+        if (e.code === "Space") {
+            player.dy = player.jumpForce;
+        }
+    });
+
+    function updateHighScore() {
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('platformerHighScore', highScore);  // Updated key for uniqueness
+        }
+    }
+
+    document.addEventListener('keyup', (e) => {
+        if (e.code === "ArrowLeft" || e.code === "ArrowRight") player.dx = 0;
+    });
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        player.x += player.dx;
+        player.y += player.dy;
+        player.dy += player.gravity;
+
+        // Side-scrolling
+        cameraX = player.x - canvas.width / 2;
+        cameraX = Math.min(cameraX, goal.x + goal.width - canvas.width);  // Don't scroll beyond the goal
+        cameraX = Math.max(cameraX, 0);  // Don't scroll before the start
+
+        player.onGround = false;
+        for (let p of platforms) {
+            if (player.x < p.x + p.width &&
+                player.x + player.width > p.x &&
+                player.y < p.y + p.height &&
+                player.y + player.height > p.y) {
+                player.dy = 0;
+                player.y = p.y - player.height;
+                player.onGround = true;
+            }
+        }
+
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
+
+        enemy.x += enemy.dx;
+        if (enemy.x <= 0 || enemy.x + enemy.width >= cameraX + canvas.width) enemy.dx *= -1;
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x - cameraX, enemy.y, enemy.width, enemy.height);
+
+        if (player.x < enemy.x + enemy.width &&
+            player.x + player.width > enemy.x &&
+            player.y < enemy.y + enemy.height &&
+            player.y + player.height > enemy.y) {
+            player.x = player.startX;
+            player.y = player.startY;
+            score = 0;
+        }
+
+        for (let e of enemies) {
+            e.x += e.dx;
+            if (e.x <= 0 || e.x + e.width >= 5000) e.dx *= -1;  // Change direction when reaching the ends
+            ctx.fillStyle = e.color;
+            ctx.fillRect(e.x - cameraX, e.y, e.width, e.height);
+
+            if (player.x < e.x + e.width &&
+                player.x + player.width > e.x &&
+                player.y < e.y + e.height &&
+                player.y + player.height > e.y) {
+                player.x = player.startX;
+                player.y = player.startY;
+                score = 0;
+            }
+        }
+
+        // Draw and collect stars
+        for (let i = stars.length - 1; i >= 0; i--) {
+            const s = stars[i];
+            ctx.beginPath();
+            ctx.arc(s.x - cameraX, s.y, s.radius, 0, 2 * Math.PI);
+            ctx.fillStyle = s.color;
+            ctx.fill();
+
+            if (player.x < s.x + s.radius &&
+                player.x + player.width > s.x - s.radius &&
+                player.y < s.y + s.radius &&
+                player.y + player.height > s.y - s.radius) {
+                score++;
+                stars.splice(i, 1);
+            }
+        }
+
+        for (let p of platforms) {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+        }
+
+        ctx.fillStyle = goal.color;
+        ctx.fillRect(goal.x - cameraX, goal.y, goal.width, goal.height);
+
+        if (player.x < goal.x + goal.width &&
+            player.x + player.width > goal.x &&
+            player.y < goal.y + goal.height &&
+            player.y + player.height > goal.y) {
+            score += 100 + 10 * currentLevel;
+            currentLevel++;
+            if (currentLevel > maxLevels) {
+                alert(`You Win! Score: ${score}, High Score: ${highScore}`);
+                document.location.reload();
+            } else {
+                generateLevel(currentLevel);
+                player.x = player.startX;
+                player.y = player.startY;
+            }
+        }
+
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "#000000";
+        ctx.fillText(`Level: ${currentLevel} | Score: ${score} | High Score: ${highScore}`, 10, 30);
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    highScore = localStorage.getItem('platformerHighScore') || 0;  // Updated key for uniqueness
+    gameLoop();
+
+</script>
+</body>
+</html>

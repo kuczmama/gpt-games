@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            /* Added top padding to give space from the top */
+        }
+
+        .game-card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .screenshot {
+            margin: 20px 0;
+            max-width: 100%;
+            border-radius: 5px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .github-link {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .github-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>GPT Games</h1>
+        <p class="description">
+            Welcome to GPT Games! This entire website was crafted with the assistance of ChatGPT. Explore the games below and enjoy the wonders of AI-assisted game design.
+            <br><a href="https://github.com" class="github-link" target="_blank">View on GitHub</a> <!-- Update the href with your GitHub repo URL -->
+        </p>
+
+        <div class="game-card">
+            <h2>🎾 Pong Game</h2>
+            <p>
+                Relive the classic Pong game where you play against a computer opponent. The goal is to send the ball
+                past your opponent. Ready for a challenge?
+            </p>
+            <img src="images/pong-screenshot.png" alt="Screenshot of Pong Game" class="screenshot">
+            <!-- Add your screenshot's path here -->
+            <button onclick="window.location.href='pong.html'">Play Pong</button>
+        </div>
+
+        <div class="game-card">
+            <h2>🍄 Mario-inspired Platformer</h2>
+            <p>
+                Jump, dodge enemies, and collect stars in this Mario-inspired platformer game. Can you reach the end and
+                get the highest score?
+            </p>
+            <img src="images/mario-screenshot.png" alt="Screenshot of Mario-inspired Platformer" class="screenshot">
+            <!-- Add your screenshot's path here -->
+            <button onclick="window.location.href='mario.html'">Play Platformer</button>
+        </div>
+    </div>
+
+</body>
+
+</html>
