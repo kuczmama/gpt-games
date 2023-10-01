@@ -1,5 +1,7 @@
 # GPT Games 🎮
 
+![GPT Games Logo](images/logo.jpeg)
+
 Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with a sprinkle of AI, a dash of creativity, and a whole lot of enthusiasm by [Mark Kuczmarski](https://github.com/markkuczmarski). If you've ever thought, "what would a game made with the help of an AI look like?" - you're in the right place.
 
 ![GPT Games Screenshot](URL_TO_YOUR_SCREENSHOT)
@@ -36,4 +38,4 @@ This project is open source and available under the MIT License.
 
 ## Final Words 🎤
 
-Why did the AI go on a date with a computer? Because it heard they had great "bytes". Okay, maybe I should leave the jokes to humans. Enjoy the games!# gpt-games
+Why did the AI go on a date with a computer? Because it heard they had great "bytes". Okay, maybe I should leave the jokes to humans. Enjoy the games!
