@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <style>
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            width: 450px;
+            margin: 50px auto;
+        }
+
+        #sudoku-board input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        #sudoku-board input.highlighted {
+            background-color: #f0e68c;
+        }
+
+        #sudoku-board input.selected {
+            background-color: #afd8e6;
+        }
+
+        #timer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #new-game, #hint {
+            margin: 10px auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="timer">Time: 00:00</div>
+    <div id="sudoku-board"></div>
+    <button id="new-game">New Game</button>
+    <button id="hint">Hint</button>
+
+    <script>
+        const board = document.getElementById('sudoku-board');
+        let selectedCell = null;
+
+        // Dummy puzzle for demonstration
+        const puzzle = [
+            ['5', '3', '.', '.', '7', '.', '.', '.', '.'],
+            ['6', '.', '.', '1', '9', '5', '.', '.', '.'],
+            ['.', '9', '8', '.', '.', '.', '.', '6', '.'],
+            ['8', '.', '.', '.', '6', '.', '.', '.', '3'],
+            ['4', '.', '.', '8', '.', '3', '.', '.', '1'],
+            ['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+            ['.', '6', '.', '.', '.', '.', '2', '8', '.'],
+            ['.', '.', '.', '4', '1', '9', '.', '.', '5'],
+            ['.', '.', '.', '.', '8', '.', '.', '7', '9']
+        ];
+
+        function drawBoard() {
+            board.innerHTML = ''; // clear the board
+
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('input');
+                    cell.maxLength = 1;
+                    cell.value = puzzle[row][col] !== '.' ? puzzle[row][col] : '';
+                    cell.readOnly = puzzle[row][col] !== '.';
+                    cell.addEventListener('click', () => selectCell(cell, row, col));
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function selectCell(cell, row, col) {
+            if (selectedCell) {
+                selectedCell.classList.remove('selected');
+            }
+
+            cell.classList.add('selected');
+            selectedCell = cell;
+
+            highlightCells(row, col);
+        }
+
+        function highlightCells(row, col) {
+            const inputs = board.querySelectorAll('input');
+            inputs.forEach(cell => cell.classList.remove('highlighted'));
+
+            for (let i = 0; i < 9; i++) {
+                const rowIndex = Math.floor(i / 3) + Math.floor(row / 3) * 3;
+                const colIndex = i % 3 + Math.floor(col / 3) * 3;
+
+                // Highlight the current row, column, and 3x3 box
+                inputs[row * 9 + i].classList.add('highlighted'); // row
+                inputs[i * 9 + col].classList.add('highlighted'); // column
+                inputs[rowIndex * 9 + colIndex].classList.add('highlighted'); // 3x3 box
+            }
+        }
+
+        document.addEventListener('keyup', event => {
+            if (selectedCell && !selectedCell.readOnly && event.key >= '1' && event.key <= '9') {
+                selectedCell.value = event.key;
+                // TODO: Add validation check
+            }
+        });
+
+        // Initialize the game
+        drawBoard();
+
+    </script>
+</body>
+
+</html>
