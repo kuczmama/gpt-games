@@ -34,29 +34,92 @@
             background-color: #afd8e6;
         }
 
+        #sudoku-board input.correct {
+            color: green;
+            /* Change this to your preferred color, e.g., 'yellow' */
+        }
+
+
         #timer {
             text-align: center;
             margin-bottom: 20px;
         }
 
-        #new-game, #hint {
+        #new-game,
+        #hint {
             margin: 10px auto;
             display: block;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-2px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-1px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(2px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(2px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        #sudoku-board input.invalid {
+            background-color: #ffe0e0;
+            animation: shake 0.5s;
         }
     </style>
 </head>
 
 <body>
     <div id="timer">Time: 00:00</div>
+    <div id="best-time">Best Time: --:--</div>
+    <div id="win-message" style="display: none; text-align: center;">🎉 Congratulations! You completed the Sudoku! 🎉
+    </div>
     <div id="sudoku-board"></div>
     <button id="new-game">New Game</button>
     <button id="hint">Hint</button>
+    <button id="solve">Solve</button>
 
     <script>
         const board = document.getElementById('sudoku-board');
+        const playerMoves = [...Array(9)].map(e => Array(9).fill('.'));
         let selectedCell = null;
-
-        // Dummy puzzle for demonstration
+        let timer = null;
+        let seconds = 0;
         const puzzle = [
             ['5', '3', '.', '.', '7', '.', '.', '.', '.'],
             ['6', '.', '.', '1', '9', '5', '.', '.', '.'],
@@ -69,20 +132,163 @@
             ['.', '.', '.', '.', '8', '.', '.', '7', '9']
         ];
 
+        function createGameFromSolution(grid) {
+            let newGame = JSON.parse(JSON.stringify(grid)); // deep copy
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (Math.random() > 0.5) { // you can adjust this value for more/less filled squares
+                        newGame[i][j] = '.';
+                    }
+                }
+            }
+            return newGame;
+        }
+
+        function isGameCompleted() {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (playerMoves[row][col] === '.' || !isValidMove(row, col, playerMoves[row][col])) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function updateBestTime() {
+            const bestTime = localStorage.getItem('bestTime');
+            if (!bestTime || seconds < parseInt(bestTime)) {
+                localStorage.setItem('bestTime', seconds);
+                document.getElementById('best-time').innerText = 'Best Time: ' + formatTime(seconds);
+            } else {
+                document.getElementById('best-time').innerText = 'Best Time: ' + formatTime(bestTime);
+            }
+        }
+
+        function formatTime(secs) {
+            const minutes = Math.floor(secs / 60);
+            const displaySeconds = secs % 60;
+            return String(minutes).padStart(2, '0') + ':' + String(displaySeconds).padStart(2, '0');
+        }
+
+        // Modify startTimer function to check game completion:
+        function startTimer() {
+            if (timer) clearInterval(timer);
+
+            seconds = 0;
+            timer = setInterval(function () {
+                seconds++;
+                document.getElementById('timer').innerText = 'Time: ' + formatTime(seconds);
+
+                if (isGameCompleted()) {
+                    clearInterval(timer);
+                    updateBestTime();
+                    document.getElementById('win-message').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        function solveSudoku(grid) {
+            let emptySpot = findEmptySpot(grid);
+            if (!emptySpot) {
+                return true;
+            }
+            let row = emptySpot[0];
+            let col = emptySpot[1];
+
+            for (let num = 1; num <= 9; num++) {
+                if (isValidMove(row, col, String(num))) {
+                    grid[row][col] = String(num);
+                    if (solveSudoku(grid)) {
+                        return true;
+                    }
+                    grid[row][col] = '.';
+                }
+            }
+            return false;
+        }
+
+        function findEmptySpot(grid) {
+            for (let i = 0; i < grid.length; i++) {
+                for (let j = 0; j < grid[i].length; j++) {
+                    if (grid[i][j] === '.') {
+                        return [i, j];
+                    }
+                }
+            }
+            return undefined;
+        }
+
+
         function drawBoard() {
             board.innerHTML = ''; // clear the board
+
+            // Ensure the puzzle is solvable
+            if (!solveSudoku(puzzle)) {
+                drawBoard();
+                return;
+            }
+
+            const game = createGameFromSolution(puzzle);
 
             for (let row = 0; row < 9; row++) {
                 for (let col = 0; col < 9; col++) {
                     const cell = document.createElement('input');
                     cell.maxLength = 1;
-                    cell.value = puzzle[row][col] !== '.' ? puzzle[row][col] : '';
-                    cell.readOnly = puzzle[row][col] !== '.';
+                    cell.value = game[row][col] !== '.' ? game[row][col] : '';
+                    cell.readOnly = game[row][col] !== '.';
                     cell.addEventListener('click', () => selectCell(cell, row, col));
                     board.appendChild(cell);
+                    playerMoves[row][col] = game[row][col]; // Initialize playerMoves
+                }
+            }
+
+            startTimer();  // start timer when a new game is drawn
+        }
+
+        function isValidMove(row, col, num) {
+            for (let i = 0; i < 9; i++) {
+                const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+                const n = 3 * Math.floor(col / 3) + i % 3;
+
+                if (puzzle[row][i] == num || puzzle[i][col] == num || puzzle[m][n] == num ||
+                    (playerMoves[row][i] == num && i !== col) ||
+                    (playerMoves[i][col] == num && i !== row) ||
+                    (playerMoves[m][n] == num && m !== row && n !== col)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function clearHighlights(row, col) {
+            for (let i = 0; i < 9; i++) {
+                board.children[row * 9 + i].classList.remove('invalid');
+                board.children[i * 9 + col].classList.remove('invalid');
+                const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+                const n = 3 * Math.floor(col / 3) + i % 3;
+                board.children[m * 9 + n].classList.remove('invalid');
+            }
+        }
+
+
+        function highlightIllegal(row, col) {
+            for (let i = 0; i < 9; i++) {
+                if (board.children[row * 9 + i].value === selectedCell.value && i !== col) {
+                    board.children[row * 9 + i].classList.add('invalid');
+                }
+                if (board.children[i * 9 + col].value === selectedCell.value && i !== row) {
+                    board.children[i * 9 + col].classList.add('invalid');
+                }
+                const m = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+                const n = 3 * Math.floor(col / 3) + i % 3;
+                if (board.children[m * 9 + n].value === selectedCell.value && (m !== row || n !== col)) {
+                    board.children[m * 9 + n].classList.add('invalid');
                 }
             }
         }
+
+
 
         function selectCell(cell, row, col) {
             if (selectedCell) {
@@ -91,6 +297,12 @@
 
             cell.classList.add('selected');
             selectedCell = cell;
+            selectedCell.addEventListener('input', function () {
+                if (this.value === '') {
+                    this.classList.remove('invalid');
+                }
+            });
+
 
             highlightCells(row, col);
         }
@@ -111,15 +323,47 @@
         }
 
         document.addEventListener('keyup', event => {
-            if (selectedCell && !selectedCell.readOnly && event.key >= '1' && event.key <= '9') {
-                selectedCell.value = event.key;
-                // TODO: Add validation check
+            if (selectedCell && !selectedCell.readOnly) {
+                const row = Math.floor(Array.from(board.children).indexOf(selectedCell) / 9);
+                const col = Array.from(board.children).indexOf(selectedCell) % 9;
+
+                if (event.key >= '1' && event.key <= '9') {
+                    if (isValidMove(row, col, event.key)) {
+                        selectedCell.value = event.key;
+                        playerMoves[row][col] = event.key; // Update playerMoves
+                        selectedCell.style.color = 'black';
+                        clearHighlights(row, col);
+                    } else {
+                        selectedCell.style.color = 'blue';
+                        clearHighlights(row, col); // Clear previous highlights before applying new ones.
+                        highlightIllegal(row, col);
+                    }
+                } else if (event.key === 'Backspace' || event.key === 'Delete') {
+                    selectedCell.classList.remove('invalid');
+                }
             }
         });
 
-        // Initialize the game
-        drawBoard();
 
+
+        // Initial game draw
+        drawBoard();
+        document.getElementById('new-game').addEventListener('click', () => drawBoard());
+
+        document.getElementById('solve').addEventListener('click', () => {
+            solveSudoku(puzzle);
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    board.children[row * 9 + col].value = puzzle[row][col];
+                }
+            }
+        });
+        const initialBestTime = localStorage.getItem('bestTime');
+        if (initialBestTime) {
+            document.getElementById('best-time').innerText = 'Best Time: ' + formatTime(initialBestTime);
+        } else {
+            document.getElementById('best-time').innerText = 'Best Time: --:--';
+        }
     </script>
 </body>
 
