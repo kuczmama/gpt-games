@@ -7,14 +7,18 @@ Hey there, welcome to **GPT Games**! An open-source gaming paradise crafted with
 ## Games 🕹️
 
 - **Pong Game**: The classic Pong you love, but with a twist – it's made in collaboration with an AI. Bet you didn't see that coming!
+  
 - **Mario-inspired Platformer**: Jump, dodge, and collect stars. And remember, every time you fall, somewhere in the cloud, an AI sheds a virtual tear. 🤖
+  
 - **Hangman Game**: Challenge your vocabulary skills! Guess letters and uncover the word. But watch out! Every wrong guess brings the hangman closer. Can you solve the puzzle before the hangman completes? Crafted with AI wisdom, of course!
+  
+- **Sudoku**: Dive into the world of numbers with Sudoku. Fill in the grid so that every row, every column, and every 3x3 box contains the digits 1 through 9 without repetition. It's a brain-teasing puzzle that will challenge your logical thinking. Sudoku is not just a game, it's a journey of numbers, crafted with precision!
 
 And guess what? More games are on the horizon! Stay tuned for more AI-assisted gaming madness.
 
-| Mario Screenshot | Pong Screenshot | Hangman Screenshot |
-|:---:|:---:|:---:|
-| ![Mario Screenshot](images/mario-screenshot.png) | ![Pong Screenshot](images/pong-screenshot.png) | ![Hangman Screenshot](images/hangman-screenshot.png) |
+| Mario Screenshot | Pong Screenshot | Hangman Screenshot | Sudoku Screenshot |
+|:---:|:---:|:---:|:---:|
+| ![Mario Screenshot](images/mario-screenshot.png) | ![Pong Screenshot](images/pong-screenshot.png) | ![Hangman Screenshot](images/hangman-screenshot.png) | ![Sudoku Screenshot](images/sudoku-screenshot.png) |
 
 ## Demo 🚀
 
