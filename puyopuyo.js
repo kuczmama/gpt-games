@@ -212,13 +212,96 @@ class EnemyBlockPair extends BlockPair {
         enemyCtx.fillRect(block.col * gridSize, block.row * gridSize, gridSize, gridSize);
     }
 
-    // Override checkRemoval to introduce sending garbage
-    checkRemoval() {
-        // ... (rest of the code)
-        if (toRemove.length > 0) {
-            sendGarbageToPlayer(toRemove.length / 4);  // Send garbage blocks to player
+    moveDown() {
+        const primaryCollision = this.collision(1, 0, this.primary);
+        const secondaryCollision = this.collision(1, 0, this.secondary);
+
+        if (!primaryCollision && !secondaryCollision) {
+            this.primary.row++;
+            this.secondary.row++;
+        } else {
+            // Place the primary block if it has collided
+            if (primaryCollision || this.secondary.row > this.primary.row) {
+                this.grid[this.primary.row][this.primary.col] = this.primary.color;
+            }
+
+            // Place the secondary block if it has collided
+            if (secondaryCollision || this.primary.row > this.secondary.row) {
+                this.grid[this.secondary.row][this.secondary.col] = this.secondary.color;
+            }
+
+            this.checkRemoval();
+
+            // Create a new enemy block after the previous one has collided
+            enemyBlock = new EnemyBlockPair(this.grid);
+            if (this.collision(0, 0, enemyBlock.primary) || this.collision(0, 0, enemyBlock.secondary)) {
+                // End the game or handle as required when the enemy loses
+                console.log('Enemy Game Over!');
+            }
         }
     }
+
+    // Override checkRemoval to introduce sending garbage
+    checkRemoval() {
+        let removedAny;
+
+        do {
+            removedAny = false;
+            let toRemove = [];
+
+            let visited = Array(gridRows).fill(null).map(() => Array(gridCols).fill(false));
+
+            const dfs = (r, c, color) => {
+                if (r < 0 || r >= gridRows || c < 0 || c >= gridCols || visited[r][c] || this.grid[r][c] !== color) {
+                    return [];
+                }
+                visited[r][c] = true;
+                let cells = [{ r, c }];
+                cells = cells.concat(dfs(r + 1, c, color));
+                cells = cells.concat(dfs(r - 1, c, color));
+                cells = cells.concat(dfs(r, c + 1, color));
+                cells = cells.concat(dfs(r, c - 1, color));
+                return cells;
+            }
+
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
+                    if (this.grid[r][c] && !visited[r][c]) {
+                        const blocks = dfs(r, c, this.grid[r][c]);
+                        if (blocks.length >= 4) {
+                            toRemove = toRemove.concat(blocks);
+                        }
+                    }
+                }
+            }
+
+            toRemove.forEach(cell => {
+                this.grid[cell.r][cell.c] = null;
+            });
+
+            if (toRemove.length > 0) {
+                sendGarbageToPlayer(Math.ceil(toRemove.length / 4));  // Send garbage blocks to player
+                removedAny = true;
+            }
+
+            // Gravity: make blocks fall down after removal
+            for (let c = 0; c < gridCols; c++) {
+                let dropRow = gridRows - 1; // Start from the bottom-most row
+
+                for (let r = gridRows - 1; r >= 0; r--) {
+                    if (this.grid[r][c]) {
+                        if (dropRow !== r) { // If there's a gap
+                            this.grid[dropRow][c] = this.grid[r][c]; // Move the block down to the lowest empty spot
+                            this.grid[r][c] = null; // Clear the original spot
+                        }
+                        dropRow--; // Move up the drop position for the next block
+                    }
+                }
+            }
+
+        } while (removedAny);
+    }
+
 }
 
 function initializeEnemyGrid() {
