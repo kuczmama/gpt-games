@@ -1,36 +1,39 @@
 const enemyCanvas = document.getElementById('enemyCanvas');
 const enemyCtx = enemyCanvas.getContext('2d');
-const enemyGrid = [];
+const enemyGrid = Array(enemyCanvas.height / 30).fill(null).map(() => Array(enemyCanvas.width / 30).fill(null));
 
-let enemyBlock = null;
-let level = 1;  // Starting level
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const grid = [];
+const grid = Array(canvas.height / 30).fill(null).map(() => Array(canvas.width / 30).fill(null));
 const gridSize = 30;
 const gridRows = canvas.height / gridSize;
 const gridCols = canvas.width / gridSize;
-let nextBlock = null;
-let score = 0;
-let highScore = localStorage.getItem('highScore') || 0;
-document.getElementById('highScore').innerText = highScore;
+
+let enemyBlock = null;
 let currentBlock = null;
+let nextBlock = null;
 let gameInterval;
+let score = 0;
+let level = 1;  // Starting level
+let highScore = localStorage.getItem('highScore') || 0;
+
+document.getElementById('highScore').innerText = highScore;
 
 class BlockPair {
-    constructor(targetGrid) {
-        this.grid = targetGrid; // Storing the grid this block belongs to
-        this.primary = {
-            row: 0,
-            col: Math.floor(gridCols / 2),
-            color: this.randomColor()
+    constructor(targetGrid, context) {
+        this.grid = targetGrid;
+        this.ctx = context;
+        this.primary = this.generateBlock(Math.floor(gridCols / 2), 0);
+        this.secondary = this.generateBlock(Math.floor(gridCols / 2), -1);
+        this.rotationState = 0;
+    }
+
+    generateBlock(col, row) {
+        return {
+            col: col,
+            row: row,
+            color: ['red', 'blue', 'green', 'yellow'][Math.floor(Math.random() * 4)]
         };
-        this.secondary = {
-            row: -1,
-            col: Math.floor(gridCols / 2),
-            color: this.randomColor()
-        };
-        this.rotationState = 0;  // Initialize to 0
     }
 
     rotate() {
@@ -75,8 +78,8 @@ class BlockPair {
     }
 
     drawBlock(block) {
-        ctx.fillStyle = block.color;
-        ctx.fillRect(block.col * gridSize, block.row * gridSize, gridSize, gridSize);
+        this.ctx.fillStyle = block.color;
+        this.ctx.fillRect(block.col * gridSize, block.row * gridSize, gridSize, gridSize);
     }
 
     collision(rowDelta, colDelta, block) {
@@ -117,7 +120,7 @@ class BlockPair {
             this.checkRemoval();
 
             currentBlock = nextBlock;
-            nextBlock = new BlockPair(this.grid);
+            nextBlock = new BlockPair(this.grid, this.ctx);
             drawNextBlock();
             if (this.collision(0, 0, currentBlock.primary) && this.collision(0, 0, currentBlock.secondary)) {
                 pauseGame();
@@ -203,13 +206,8 @@ class BlockPair {
 }
 
 class EnemyBlockPair extends BlockPair {
-    constructor(targetGrid) {
-        super(targetGrid);
-    }
-    // Override draw method to draw on enemy canvas
-    drawBlock(block) {
-        enemyCtx.fillStyle = block.color;
-        enemyCtx.fillRect(block.col * gridSize, block.row * gridSize, gridSize, gridSize);
+    constructor(targetGrid, context) {
+        super(targetGrid, context);
     }
 
     moveDown() {
@@ -233,7 +231,7 @@ class EnemyBlockPair extends BlockPair {
             this.checkRemoval();
 
             // Create a new enemy block after the previous one has collided
-            enemyBlock = new EnemyBlockPair(this.grid);
+            enemyBlock = new EnemyBlockPair(this.grid, this.ctx);
             if (this.collision(0, 0, enemyBlock.primary) || this.collision(0, 0, enemyBlock.secondary)) {
                 // End the game or handle as required when the enemy loses
                 console.log('Enemy Game Over!');
@@ -314,12 +312,16 @@ function initializeEnemyGrid() {
 }
 
 function drawEnemyGrid() {
-    enemyCtx.clearRect(0, 0, enemyCanvas.width, enemyCanvas.height);
+    drawSpecificGrid(enemyCtx, enemyGrid, enemyCanvas);
+}
+
+function drawSpecificGrid(context, grid, canvas) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
     for (let r = 0; r < gridRows; r++) {
         for (let c = 0; c < gridCols; c++) {
-            if (enemyGrid[r][c]) {
-                enemyCtx.fillStyle = enemyGrid[r][c];
-                enemyCtx.fillRect(c * gridSize, r * gridSize, gridSize, gridSize);
+            if (grid[r][c]) {
+                context.fillStyle = grid[r][c];
+                context.fillRect(c * gridSize, r * gridSize, gridSize, gridSize);
             }
         }
     }
@@ -366,15 +368,7 @@ function initializeGrid() {
 }
 
 function drawGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let r = 0; r < gridRows; r++) {
-        for (let c = 0; c < gridCols; c++) {
-            if (grid[r][c]) {
-                ctx.fillStyle = grid[r][c];
-                ctx.fillRect(c * gridSize, r * gridSize, gridSize, gridSize);
-            }
-        }
-    }
+    drawSpecificGrid(ctx, grid, canvas);
 }
 
 function increaseScore(points) {
@@ -387,26 +381,36 @@ function increaseScore(points) {
     }
 }
 
+function levelUp() {
+    level += 1;
+    document.getElementById('level').innerText = level;
+    // Adjust game speed or difficulty based on the level if needed
+}
+
 function startGame() {
     initializeGrid();
     initializeEnemyGrid();
+    
+    // Initialize other game settings, start timers, etc.
     score = 0;
+    enemyScore = 0;
+    level = 1;
     document.getElementById('score').innerText = score;
-    nextBlock = new BlockPair(grid);
-    drawNextBlock();
-    currentBlock = new BlockPair(grid);
-    enemyBlock = new EnemyBlockPair(enemyGrid);
-    gameInterval = setInterval(() => {
-        drawGrid();
-        currentBlock.draw();
+    document.getElementById('enemyScore').innerText = enemyScore;
+    document.getElementById('level').innerText = level;
 
-        drawEnemyGrid();
-        enemyBlock.draw();
+    currentBlock = new BlockPair(grid, ctx);
+    nextBlock = new BlockPair(grid, ctx);
+    enemyBlock = new EnemyBlockPair(enemyGrid, enemyCtx);
 
+    gameInterval = setInterval(function() {
         currentBlock.moveDown();
         enemyAI();
-        enemyBlock.moveDown();
-    }, 500 - (level * 50));
+        drawGrid();
+        drawEnemyGrid();
+        currentBlock.draw();
+        enemyBlock.draw();
+    }, 1000);  // example game tick every 1 second
 }
 
 function drawNextBlock() {
