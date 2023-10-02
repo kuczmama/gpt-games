@@ -44,12 +44,15 @@
             <li><b>Move Right:</b> Press the "D" key or the right arrow key.</li>
             <li><b>Move Down Faster:</b> Press the "S" key or the down arrow key.</li>
             <li><b>Rotate Blocks:</b> Press the up arrow key to rotate the blocks.</li>
-            <li>Stack the blocks and try to get 4 or more of the same color in a row horizontally or vertically to remove them.</li>
-            <li>The game progresses with blocks falling from the top. Your objective is to strategically place these blocks without letting them overflow. Once a pair of blocks can't fit into the play area, the game ends.</li>
+            <li>Stack the blocks and try to get 4 or more of the same color in a row horizontally or vertically to
+                remove them.</li>
+            <li>The game progresses with blocks falling from the top. Your objective is to strategically place these
+                blocks without letting them overflow. Once a pair of blocks can't fit into the play area, the game ends.
+            </li>
             <li>Score points by removing blocks. The more blocks you remove at once, the higher your score!</li>
         </ul>
     </div>
-    
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -143,25 +146,31 @@
                     this.primary.row++;
                     this.secondary.row++;
                 } else {
-                    grid[this.primary.row][this.primary.col] = this.primary.color;
-                    if (this.secondary.row >= 0) {  // Only place the secondary block if it's within the grid
-                        grid[this.secondary.row][this.secondary.col] = this.secondary.color;
-                    }
-                    this.checkRemoval();
-                    currentBlock = new BlockPair();  // Create a new pair
-                    if (this.collision(0, 0, currentBlock.primary)) {
-                        if (this.collision(0, 0, currentBlock.secondary)) {
-                            // Only end the game if both primary and secondary blocks collide at their starting positions
-                            pauseGame();
-                            alert('Game Over!');
-                        } else {
-                            // If the secondary block doesn't collide, move it down one position to make it visible
-                            currentBlock.secondary.row++;
+                    if (primaryCollision) {
+                        grid[this.primary.row][this.primary.col] = this.primary.color;
+                        while (!this.collision(1, 0, this.secondary)) {
+                            this.secondary.row++;
                         }
+                        if (this.secondary.row >= 0) {
+                            grid[this.secondary.row][this.secondary.col] = this.secondary.color;
+                        }
+                    } else if (secondaryCollision) {
+                        grid[this.secondary.row][this.secondary.col] = this.secondary.color;
+                        while (!this.collision(1, 0, this.primary)) {
+                            this.primary.row++;
+                        }
+                        grid[this.primary.row][this.primary.col] = this.primary.color;
+                    }
+
+                    this.checkRemoval();
+
+                    currentBlock = new BlockPair(); // Spawn a new pair only after placing both blocks
+                    if (this.collision(0, 0, currentBlock.primary) && this.collision(0, 0, currentBlock.secondary)) {
+                        pauseGame();
+                        alert('Game Over!');
                     }
                 }
             }
-
 
             moveLeft() {
                 if (!this.collision(0, -1, this.primary) && !this.collision(0, -1, this.secondary)) {
