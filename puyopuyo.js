@@ -328,22 +328,26 @@ function drawSpecificGrid(context, grid, canvas) {
 }
 
 function enemyAI() {
-    const move = ['left', 'right', 'down', 'rotate'][Math.floor(Math.random() * 4)];
-    switch (move) {
-        case 'left':
-            enemyBlock.moveLeft();
-            break;
-        case 'right':
-            enemyBlock.moveRight();
-            break;
-        case 'down':
-            enemyBlock.moveDown();
-            break;
-        case 'rotate':
-            enemyBlock.rotate();
-            break;
+    const randomChoice = Math.random();
+
+    if (randomChoice < 0.7) { // 70% chance to move down
+        enemyBlock.moveDown();
+        return;
+    }
+
+    if (randomChoice < 0.8) { // 10% chance to rotate
+        enemyBlock.rotate();
+        return;
+    }
+
+    // The remaining 20% chance is to move left or right
+    if (!enemyBlock.collision(0, -1, enemyBlock.primary) && !enemyBlock.collision(0, -1, enemyBlock.secondary)) {
+        enemyBlock.moveLeft();
+    } else if (!enemyBlock.collision(0, 1, enemyBlock.primary) && !enemyBlock.collision(0, 1, enemyBlock.secondary)) {
+        enemyBlock.moveRight();
     }
 }
+
 
 function sendGarbageToPlayer(amount) {
     // Add `amount` of garbage rows at the bottom of player's grid
@@ -390,7 +394,7 @@ function levelUp() {
 function startGame() {
     initializeGrid();
     initializeEnemyGrid();
-    
+
     // Initialize other game settings, start timers, etc.
     score = 0;
     enemyScore = 0;
@@ -403,7 +407,7 @@ function startGame() {
     nextBlock = new BlockPair(grid, ctx);
     enemyBlock = new EnemyBlockPair(enemyGrid, enemyCtx);
 
-    gameInterval = setInterval(function() {
+    gameInterval = setInterval(function () {
         currentBlock.moveDown();
         enemyAI();
         drawGrid();
