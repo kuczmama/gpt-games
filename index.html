@@ -7,38 +7,41 @@
     <title>Game Collection</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafafa;
             margin: 0;
             padding: 0;
+            color: #333;
         }
 
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
+            max-width: 800px;
+            margin: auto;
         }
 
         .game-card {
             background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            padding: 25px;
             width: 100%;
-            max-width: 600px;
-            text-align: center;
-            transition: transform 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .game-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.12);
         }
 
         a {
             text-decoration: none;
             color: #007BFF;
+            font-weight: 600;
         }
 
         a:hover {
@@ -48,41 +51,66 @@
         .screenshot {
             margin: 20px 0;
             max-width: 100%;
-            border-radius: 5px;
+            border-radius: 10px;
         }
 
         h1 {
-            font-size: 2rem;
-            color: #333;
+            font-size: 2.5rem;
+            font-weight: bold;
             margin-bottom: 10px;
         }
 
+        img[src="images/logo.jpeg"] {
+            max-width: 150px;
+            margin: 20px 0;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
         .description {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 30px;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
             text-align: center;
+            line-height: 1.6;
         }
 
         .github-link {
             color: #007BFF;
             text-decoration: none;
+            font-weight: 600;
         }
 
         .github-link:hover {
             text-decoration: underline;
         }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
 <body>
-
     <div class="container">
         <h1>GPT Games</h1>
+        <img src="images/logo.jpeg" alt="GPT Games Logo" />
         <p class="description">
-            Welcome to GPT Games! This entire website was crafted with the assistance of ChatGPT. Explore the games below and enjoy the wonders of AI-assisted game design.
+            Welcome to GPT Games! This entire website was crafted with the assistance of ChatGPT. Explore the games
+            below and enjoy the wonders of AI-assisted game design.
             <br><a href="https://github.com/kuczmama/gpt-games" class="github-link" target="_blank">View on GitHub</a>
         </p>
+
 
         <div class="game-card">
             <h2>🎾 Pong Game</h2>
@@ -107,7 +135,9 @@
         <div class="game-card">
             <h2>🖋️ Hangman Game</h2>
             <p>
-                Test your vocabulary skills with Hangman. Guess the letters in the hidden word and try to solve the puzzle before the hangman is fully drawn. Every correct guess earns you points, but be careful – wrong guesses get you closer to the hangman!
+                Test your vocabulary skills with Hangman. Guess the letters in the hidden word and try to solve the
+                puzzle before the hangman is fully drawn. Every correct guess earns you points, but be careful – wrong
+                guesses get you closer to the hangman!
             </p>
             <img src="images/hangman-screenshot.png" alt="Screenshot of Hangman Game" class="screenshot">
             <button onclick="window.location.href='hangman.html'">Play Hangman</button>
@@ -117,11 +147,23 @@
         <div class="game-card">
             <h2>🔢 Sudoku</h2>
             <p>
-                Dive into the world of numbers with Sudoku. Fill in the grid so that every row, every column, and every 3x3 box contains the digits 1 through 9 without repetition. It's a brain-teasing puzzle that will challenge your logical thinking. Are you up for the challenge?
+                Dive into the world of numbers with Sudoku. Fill in the grid so that every row, every column, and every
+                3x3 box contains the digits 1 through 9 without repetition. It's a brain-teasing puzzle that will
+                challenge your logical thinking. Are you up for the challenge?
             </p>
             <img src="images/sudoku-screenshot.png" alt="Screenshot of Sudoku Game" class="screenshot">
             <!-- Add your screenshot's path here -->
             <button onclick="window.location.href='sudoku.html'">Play Sudoku</button>
+        </div>
+
+        <div class="game-card">
+            <h2>🌈 PuyoPuyo</h2>
+            <p>
+                Immerse yourself in a colorful world where you stack and match Puyos to create explosive combos. It's a
+                chain reaction of fun, amplified with AI innovations! Ready to stack?
+            </p>
+            <img src="images/puyopuyo-screenshot.png" alt="Screenshot of PuyoPuyo Game" class="screenshot">
+            <button onclick="window.location.href='puyopuyo.html'">Play PuyoPuyo</button>
         </div>
 
     </div>
