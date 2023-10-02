@@ -28,7 +28,14 @@
 </head>
 
 <body>
-    <canvas id="gameCanvas" width="240" height="480"></canvas>
+    <div style="display: flex;">
+        <canvas id="gameCanvas" width="240" height="480"></canvas>
+        <div id="nextBlockDisplay">
+            <h4>Next Block:</h4>
+            <canvas id="nextBlockCanvas" width="60" height="60"></canvas>
+        </div>
+    
+    </div>
 
     <div id="controls">
         <button onclick="startGame()">Start</button>
@@ -60,6 +67,7 @@
         const gridSize = 30;
         const gridRows = canvas.height / gridSize;
         const gridCols = canvas.width / gridSize;
+        let nextBlock = null;
         let score = 0;
         let highScore = localStorage.getItem('highScore') || 0;
         document.getElementById('highScore').innerText = highScore;
@@ -164,7 +172,9 @@
 
                     this.checkRemoval();
 
-                    currentBlock = new BlockPair(); // Spawn a new pair only after placing both blocks
+                    currentBlock = nextBlock;
+                    nextBlock = new BlockPair();
+
                     if (this.collision(0, 0, currentBlock.primary) && this.collision(0, 0, currentBlock.secondary)) {
                         pauseGame();
                         alert('Game Over!');
@@ -283,13 +293,28 @@
             initializeGrid();
             score = 0;
             document.getElementById('score').innerText = score;
-            currentBlock = new BlockPair();  // <-- This is the change
+            nextBlock = new BlockPair();
+            currentBlock = new BlockPair();  // Start with a block
             gameInterval = setInterval(() => {
                 drawGrid();
                 currentBlock.draw();
+                drawNextBlock();
                 currentBlock.moveDown();
             }, 500);
         }
+
+        function drawNextBlock() {
+            const canvas = document.getElementById('nextBlockCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const offsetX = canvas.width / 2;
+            const offsetY = canvas.height / 2;
+            ctx.fillStyle = nextBlock.primary.color;
+            ctx.fillRect(offsetX, offsetY, gridSize, gridSize);
+            ctx.fillStyle = nextBlock.secondary.color;
+            ctx.fillRect(offsetX + (nextBlock.secondary.col - nextBlock.primary.col) * gridSize, offsetY + (nextBlock.secondary.row - nextBlock.primary.row) * gridSize, gridSize, gridSize);
+        }
+
 
 
         function pauseGame() {
