@@ -185,57 +185,67 @@
                     this.secondary.col++;
                 }
             }
-
             checkRemoval() {
-                let visited = Array(gridRows).fill(null).map(() => Array(gridCols).fill(false));
-                let toRemove = [];
+                let removedAny;
 
-                const dfs = (r, c, color) => {
-                    if (r < 0 || r >= gridRows || c < 0 || c >= gridCols || visited[r][c] || grid[r][c] !== color) {
-                        return [];
+                do {
+                    removedAny = false;
+                    let toRemove = [];
+
+                    let visited = Array(gridRows).fill(null).map(() => Array(gridCols).fill(false));
+
+                    const dfs = (r, c, color) => {
+                        if (r < 0 || r >= gridRows || c < 0 || c >= gridCols || visited[r][c] || grid[r][c] !== color) {
+                            return [];
+                        }
+                        visited[r][c] = true;
+                        let cells = [{ r, c }];
+                        cells = cells.concat(dfs(r + 1, c, color));
+                        cells = cells.concat(dfs(r - 1, c, color));
+                        cells = cells.concat(dfs(r, c + 1, color));
+                        cells = cells.concat(dfs(r, c - 1, color));
+                        return cells;
                     }
-                    visited[r][c] = true;
-                    let cells = [{ r, c }];
-                    cells = cells.concat(dfs(r + 1, c, color));
-                    cells = cells.concat(dfs(r - 1, c, color));
-                    cells = cells.concat(dfs(r, c + 1, color));
-                    cells = cells.concat(dfs(r, c - 1, color));
-                    return cells;
-                }
 
-                for (let r = 0; r < gridRows; r++) {
-                    for (let c = 0; c < gridCols; c++) {
-                        if (grid[r][c] && !visited[r][c]) {
-                            const blocks = dfs(r, c, grid[r][c]);
-                            if (blocks.length >= 4) {
-                                toRemove = toRemove.concat(blocks);
+                    for (let r = 0; r < gridRows; r++) {
+                        for (let c = 0; c < gridCols; c++) {
+                            if (grid[r][c] && !visited[r][c]) {
+                                const blocks = dfs(r, c, grid[r][c]);
+                                if (blocks.length >= 4) {
+                                    toRemove = toRemove.concat(blocks);
+                                }
                             }
                         }
                     }
-                }
 
-                toRemove.forEach(cell => {
-                    grid[cell.r][cell.c] = null;
-                });
+                    toRemove.forEach(cell => {
+                        grid[cell.r][cell.c] = null;
+                    });
 
-                // Gravity: make blocks fall down after removal
-                for (let c = 0; c < gridCols; c++) {
-                    let emptyRows = [];
-                    for (let r = gridRows - 1; r >= 0; r--) {
-                        if (!grid[r][c]) {
-                            emptyRows.push(r);
-                        } else if (emptyRows.length > 0) {
-                            grid[emptyRows[emptyRows.length - 1]][c] = grid[r][c];
-                            grid[r][c] = null;
-                            emptyRows.pop();
+                    if (toRemove.length > 0) {
+                        increaseScore(toRemove.length);
+                        removedAny = true;
+                    }
+
+                    // Gravity: make blocks fall down after removal
+                    for (let c = 0; c < gridCols; c++) {
+                        let dropRow = gridRows - 1; // Start from the bottom-most row
+
+                        for (let r = gridRows - 1; r >= 0; r--) {
+                            if (grid[r][c]) {
+                                if (dropRow !== r) { // If there's a gap
+                                    grid[dropRow][c] = grid[r][c]; // Move the block down to the lowest empty spot
+                                    grid[r][c] = null; // Clear the original spot
+                                }
+                                dropRow--; // Move up the drop position for the next block
+                            }
                         }
                     }
-                }
 
-                if (toRemove.length > 0) {
-                    increaseScore(toRemove.length);
-                }
+
+                } while (removedAny);
             }
+
         }
 
         function initializeGrid() {
